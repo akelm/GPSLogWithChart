@@ -8,12 +8,10 @@ import androidx.core.content.ContextCompat;
 
 public class Utils {
     static boolean requestSinglePermission(Activity activity, String permission) {
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(activity,
                 permission) != PackageManager.PERMISSION_GRANTED) {
 
 
-            // No explanation needed; request the permission
             ActivityCompat.requestPermissions(activity,
                     new String[]{permission},
                     0);
@@ -31,7 +29,7 @@ public class Utils {
 
     static boolean requestMultiplePermissions(Activity activity, String[] permissions) {
         boolean output = true;
-        for (String perm: permissions) {
+        for (String perm : permissions) {
             output = output && requestSinglePermission(activity, perm);
         }
         return output;

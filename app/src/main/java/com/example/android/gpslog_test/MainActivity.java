@@ -241,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
                             iconInd = 0;
                             break;
                         case GPS:
+                            appViewModel.doNothing();
                             chipSportData.setVisibility(View.INVISIBLE);
                             bottomAppBar.getMenu().findItem(R.id.historyShow).getIcon()
                                     .setTint(getResources().getColor(android.R.color.darker_gray));                            
@@ -327,29 +328,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
-//        MapView map = MapManage.getInstance().getMap();
-//        map.onResume(); //needed for compass, my location overlays, v6.0.0 and up
-    }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().save(this, prefs);
-//        MapView map = MapManage.getInstance().getMap();
-//        map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
-    }
 
-//
+
 
     private boolean menuSwitch(MenuItem item) {
         MaterialCardView mcv2 = findViewById(R.id.historyView);
@@ -473,6 +454,28 @@ public class MainActivity extends AppCompatActivity {
 
         return false;
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        //this will refresh the osmdroid configuration on resuming.
+        //if you make changes to the configuration, use
+        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+//        MapView map = MapManage.getInstance().getMap();
+//        map.onResume(); //needed for compass, my location overlays, v6.0.0 and up
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //this will refresh the osmdroid configuration on resuming.
+        //if you make changes to the configuration, use
+        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //Configuration.getInstance().save(this, prefs);
+//        MapView map = MapManage.getInstance().getMap();
+//        map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
 
 }
