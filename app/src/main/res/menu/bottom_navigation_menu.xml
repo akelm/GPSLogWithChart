@@ -1,32 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent">-->
-
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-
-
-
->
+    android:layout_height="match_parent">
 
     <item
         android:id="@+id/historyShow"
         android:enabled="true"
         android:icon="@drawable/ic_history_black_24dp"
         android:title="backFab"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/actSet"
         android:enabled="true"
         android:icon="@drawable/ic_directions_walk_black_24dp"
         android:title="Settings"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/plotShow"
@@ -34,72 +25,13 @@
         android:icon="@drawable/ic_timeline_black_24dp"
         android:iconTint="@color/colorPrimary"
         android:title="Charts"
-
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/actDur"
         android:enabled="true"
         android:title="               0 s"
-        app:showAsAction="always|withText"
-
-        />
-
-
-
-
-    <!--    <item-->
-<!--        android:id="@+id/startFab"-->
-<!--        android:icon="@drawable/ic_play_arrow_black_24dp"-->
-<!--        android:enabled="true"-->
-<!--        android:title="startStop"-->
-<!--        app:showAsAction="ifRoom"-->
-<!--        />-->
-
-
+        app:showAsAction="always|withText" />
 
 </menu>
 
-<!--<menu xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--android:layout_width="match_parent"-->
-<!--android:layout_height="match_parent">-->
-
-<!--<item-->
-<!--    android:id="@+id/backFab"-->
-<!--    android:enabled="true"-->
-<!--    android:icon="@drawable/ic_arrow_back_black_24dp"-->
-<!--    android:title="backFab"-->
-
-<!--    />-->
-
-<!--<item-->
-<!--    android:id="@+id/actSet"-->
-<!--    android:enabled="true"-->
-<!--    android:icon="@drawable/osm_ic_follow_me"-->
-<!--    android:title="actIcon"-->
-<!--    app:showAsAction="ifRoom"/>-->
-
-
-<!--<item-->
-<!--    android:id="@+id/actDur"-->
-<!--    android:enabled="true"-->
-<!--    android:title="83 h 22 min 11 s"-->
-<!--    android:icon="@drawable/ic_arrow_back_black_24dp"-->
-<!--    app:showAsAction="ifRoom"-->
-<!--    />-->
-
-
-<!--<item-->
-<!--    android:id="@+id/startFab"-->
-<!--    android:icon="@drawable/ic_play_arrow_black_24dp"-->
-<!--    android:enabled="true"-->
-<!--    android:title="startStop"-->
-<!--    app:showAsAction="ifRoom"-->
-<!--    />-->
-
-
-
-<!--</menu>-->
-
-<!--</LinearLayout>-->
