@@ -1,4 +1,4 @@
-package com.example.android.gpslog_test;
+package com.example.android.GPSLogWithChart;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         bottomAppBar.setOnMenuItemClickListener(this::menuSwitch);
 
 //-------------RecyclerView---------------
-        RecyclerView activitiesView = (RecyclerView) findViewById(R.id.recView);
+        RecyclerView activitiesView = findViewById(R.id.recView);
 
         activitiesView.setAdapter(mAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -308,9 +308,9 @@ public class MainActivity extends AppCompatActivity {
         BottomAppBar bottomAppBar = findViewById(R.id.bottom_app_bar);
         int height = bottomAppBar.getHeight();
 
-        mcv.setTranslationY(-(int) (height));
-        mcv1.setTranslationY(-(int) (height));
-        mcv2.setTranslationY(-(int) (height));
+        mcv.setTranslationY(-height);
+        mcv1.setTranslationY(-height);
+        mcv2.setTranslationY(-height);
 
         // hide all cardviews
         if (mcv.getVisibility() == View.VISIBLE && item.getItemId() != R.id.plotShow) {

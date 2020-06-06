@@ -83,3 +83,7 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+libs/
+src/main/assets/
+src/main/res/anim/
+src/main/res/drawable-nodpi/
