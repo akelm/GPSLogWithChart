@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.location.Location;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
@@ -21,7 +20,6 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.advancedpolyline.ColorMappingVariationHue;
 import org.osmdroid.views.overlay.advancedpolyline.PolychromaticPaintList;
-import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,29 +29,14 @@ public class MapManage {
     public static ArrayList<Float> velocities = null;
     public static float maxV = -Float.MAX_VALUE;
     public static float minV = Float.MAX_VALUE;
-    private static Paint paint = null;
+    public static Marker selectedMarker;
     static PolychromaticPaintList paintList = null;
     static ColorMappingVariationHue colorMapVar = null;
     static MapView map = null;
     static ScaleBarOverlay mScaleBarOverlay = null;
+    private static Paint paint = null;
     private static MapManage instance = null;
     private static Activity activity = null;
-    private static Context context = null;
-    public static Marker selectedMarker;
-
-    public static class MyColorList extends ColorMappingVariationHue {
-
-        MyColorList(
-                float scalarStart, float scalarEnd, float hueStart, float hueEnd, float saturation, float luminance) {
-            super(scalarStart, scalarEnd, hueStart, hueEnd, saturation, luminance);
-        }
-
-        @Override
-        public int getColorForIndex(int pSegmentIndex) {
-            double velo = velocities.get(pSegmentIndex);
-            return computeColor((float) velo);
-        }
-    }
 
     // singleton
     private MapManage() {
@@ -79,7 +62,7 @@ public class MapManage {
 
         IMapController mapController = map.getController();
         mapController.setZoom(18.);
-        // todo pobrac lokalizacje
+        // todo change to current/last locale
         GeoPoint startPoint = new GeoPoint(52.22058123, 20.98443718);
         mapController.setCenter(startPoint);
 
@@ -91,33 +74,30 @@ public class MapManage {
         paint.setColor(Color.BLACK);
         paint.setStrokeCap(Paint.Cap.ROUND);
 
-        line.setOnClickListener(new Polyline.OnClickListener() {
-            @Override
-            public boolean onClick(Polyline polyline, MapView mapView, GeoPoint eventPos) {
-                BoundingBox bBox = mapView.getBoundingBox();
-                List<GeoPoint> lgp = line.getActualPoints();
-                double dist = Double.MAX_VALUE;
-                int ind = -1;
-                for (int i = 0; i < lgp.size(); i++) {
-                    GeoPoint gp = lgp.get(i);
-                    if (bBox.contains(gp)) {
-                        double newDist = eventPos.distanceToAsDouble(gp);
-                        if (newDist < dist) {
-                            dist = newDist;
-                            ind = i;
-                        }
+        line.setOnClickListener((polyline, mapView, eventPos) -> {
+            BoundingBox bBox = mapView.getBoundingBox();
+            List<GeoPoint> lgp = line.getActualPoints();
+            double dist = Double.MAX_VALUE;
+            int ind = -1;
+            for (int i = 0; i < lgp.size(); i++) {
+                GeoPoint gp = lgp.get(i);
+                if (bBox.contains(gp)) {
+                    double newDist = eventPos.distanceToAsDouble(gp);
+                    if (newDist < dist) {
+                        dist = newDist;
+                        ind = i;
                     }
                 }
-
-                if (ind > -1) {
-                    selectedMarker.setPosition(lgp.get(ind));
-                    selectedMarker.setAlpha(0.5f);
-                    map.invalidate();
-                    ChartManage.setSelected(ind);
-                }
-
-                return false;
             }
+
+            if (ind > -1) {
+                selectedMarker.setPosition(lgp.get(ind));
+                selectedMarker.setAlpha(0.5f);
+                map.invalidate();
+                ChartManage.setSelected(ind);
+            }
+
+            return false;
         });
 
         map.getOverlayManager().add(line);
@@ -127,12 +107,7 @@ public class MapManage {
         selectedMarker = new Marker(map);
         selectedMarker.setPosition(startPoint);
         selectedMarker.setDraggable(true);
-        selectedMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker, MapView mapView) {
-                return true;
-            }
-        });
+        selectedMarker.setOnMarkerClickListener((marker, mapView) -> true);
         selectedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         selectedMarker.setAlpha(0.5f);
         selectedMarker.setVisible(false);
@@ -145,7 +120,7 @@ public class MapManage {
 
     public static void setup(Activity act) {
         activity = act;
-        context = activity.getApplicationContext();
+        Context context = activity.getApplicationContext();
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
     }
 
@@ -235,6 +210,20 @@ public class MapManage {
         selectedMarker.setPosition(gp);
         selectedMarker.setAlpha(0.5f);
         map.invalidate();
+    }
+
+    public static class MyColorList extends ColorMappingVariationHue {
+
+        MyColorList(
+                float scalarStart, float scalarEnd, float hueStart, float hueEnd, float saturation, float luminance) {
+            super(scalarStart, scalarEnd, hueStart, hueEnd, saturation, luminance);
+        }
+
+        @Override
+        public int getColorForIndex(int pSegmentIndex) {
+            double velo = velocities.get(pSegmentIndex);
+            return computeColor((float) velo);
+        }
     }
 
 }

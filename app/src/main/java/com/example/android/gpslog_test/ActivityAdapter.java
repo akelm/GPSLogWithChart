@@ -5,11 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class ActivityAdapter extends RecyclerView.Adapter<ActivityViewHolder> {
@@ -26,6 +28,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityViewHolder> {
     }
 
     //
+    @NonNull
     @Override
     public ActivityViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_list_layout, parent, false);
@@ -45,7 +48,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityViewHolder> {
     public void onBindViewHolder(ActivityViewHolder holder, int position) {
         final ExerciseEntity activityRC = listActivity.get(position);
 
-        SimpleDateFormat sdfStart = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat sdfStart = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH);
         String StartText = sdfStart.format(activityRC.getStart());
 
         holder.actStartText.setText(StartText);
@@ -66,14 +69,12 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityViewHolder> {
             holder.actTypeImg.setImageResource(imRes);
             holder.actTypeImg.getDrawable().setTint(activity.getColor(android.R.color.white));
 
-        holder.historyView.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (listener != null && position != RecyclerView.NO_POSITION) {
-                    try {
-                        listener.onItemClick(getExercise(position));
-                    } catch (ExecutionException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
+        holder.historyView.setOnClickListener(v -> {
+            if (listener != null && position != RecyclerView.NO_POSITION) {
+                try {
+                    listener.onItemClick(getExercise(position));
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         });

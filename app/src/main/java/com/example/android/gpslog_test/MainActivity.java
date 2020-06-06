@@ -1,6 +1,7 @@
 package com.example.android.gpslog_test;
 
 import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -10,12 +11,11 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import androidx.appcompat.view.menu.ActionMenuItemView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -30,16 +30,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String[] permissions = {
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.INTERNET,
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.ACCESS_FINE_LOCATION};
+    // permission codes
+    public static final int ACCESS_FINE_LOCATION_PERMISSION_CODE = 101;
+    private static final int INTERNET_PERMISSION_CODE = 100;
 
     public static int[] listImg = {
             R.drawable.ic_directions_walk_black_24dp,
@@ -65,10 +63,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Utils.requestMultiplePermissions(this, permissions);
-
         MapManage.setup(this);
         setContentView(R.layout.activity_main);
+
+        // permissions
+        requestSinglePermission(Manifest.permission.INTERNET, INTERNET_PERMISSION_CODE);
+        requestSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, ACCESS_FINE_LOCATION_PERMISSION_CODE);
 
         MapManage.displayMap();
         ChartManage.getInstance().setup(this);
@@ -91,15 +91,12 @@ public class MainActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT);
         activitiesView.setLayoutParams(params);
 
-        mAdapter.setOnItemClickListener(new ActivityAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(ExerciseEntity exer) throws ExecutionException, InterruptedException {
-                bottomAppBar.getMenu().performIdentifierAction(R.id.historyShow, 0);
-                // todo ladowanie danych do wyswietlania;
-                appViewModel.setCurrentExercise(exer);
-                appViewModel.loadHistoryTracks();
-                appViewModel.setState(AppViewModel.States.HISTORY);
-            }
+        mAdapter.setOnItemClickListener(exer -> {
+            bottomAppBar.getMenu().performIdentifierAction(R.id.historyShow, 0);
+            // todo ladowanie danych do wyswietlania;
+            appViewModel.setCurrentExercise(exer);
+            appViewModel.loadHistoryTracks();
+            appViewModel.setState(AppViewModel.States.HISTORY);
         });
 
         activitiesView.setHasFixedSize(true);
@@ -117,162 +114,148 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // change chip data
-        appViewModel.getCurrentExercise().observe(this, new Observer<ExerciseEntity>() {
-            @Override
-            public void onChanged(@Nullable final ExerciseEntity exer) {
-                // change chip data
-                String text = "";
-                if (exer != null) {
-                    Long start = exer.getStart();
-                    SimpleDateFormat sdfStart = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                    text += sdfStart.format(start);
-                }
-                chipSportData.setText(text);
+        appViewModel.getCurrentExercise().observe(this, exer -> {
+            // change chip data
+            String text = "";
+            if (exer != null) {
+                Long start = exer.getStart();
+                SimpleDateFormat sdfStart = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH);
+                text += sdfStart.format(start);
             }
+            chipSportData.setText(text);
         });
 
         // change sport icon
-        appViewModel.getLastType().observe(this, new Observer<TypeEntity>() {
-            @Override
-            public void onChanged(@Nullable final TypeEntity type) {
-                // icon
-                if (type!=null) {
-                    int ind =0;
-                    switch (type.getTypeName()){
-                        case "WALK" : ind=0;break;
-                        case "RUN" : ind=1;break;
-                        case "BIKE" : ind=2;break;
-                    }
-                    MenuItem item = bottomAppBar.getMenu().findItem(R.id.actSet);
-                    MaterialCardView mcv = findViewById(R.id.settingsView);
-                    if (mcv.getVisibility() == View.VISIBLE) {
-                        item.setIcon(listImgTint[ind]);
-                    } else {
-                        item.setIcon(listImg[ind]);
-                    }
-                    appViewModel.matchCurrExerWithLastType();
+        appViewModel.getLastType().observe(this, type -> {
+            // icon
+            if (type != null) {
+                int ind = 0;
+                switch (type.getTypeName()) {
+                    case "WALK":
+                        ind = 0;
+                        break;
+                    case "RUN":
+                        ind = 1;
+                        break;
+                    case "BIKE":
+                        ind = 2;
+                        break;
                 }
+                MenuItem item = bottomAppBar.getMenu().findItem(R.id.actSet);
+                MaterialCardView mcv = findViewById(R.id.settingsView);
+                if (mcv.getVisibility() == View.VISIBLE) {
+                    item.setIcon(listImgTint[ind]);
+                } else {
+                    item.setIcon(listImg[ind]);
+                }
+                appViewModel.matchCurrExerWithLastType();
             }
         });
 
         // start/stop fectching track data
-        appViewModel.getGpsOk().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable final Boolean isGpsOk) {
-
+        appViewModel.getGpsOk().observe(this, isGpsOk -> {
+            if (appViewModel.isAppStateEqual(AppViewModel.States.GPS)) {
+                if (!isGpsOk) {
+                    Toast.makeText(this,
+                            "Waiting for GPS data...",
+                            Toast.LENGTH_SHORT)
+                            .show();
+                }
             }
         });
 
-        appViewModel.getTracks().observe(this, new Observer<List<TrackEntity>>() {
-            @Override
-            public void onChanged(@Nullable final List<TrackEntity> tracks) {
-                // todo mapa
-                if (tracks != null && tracks.size() > 0) {
-                    appViewModel.setLastTrack(tracks.get(tracks.size() - 1));
-                }
-                ChartManage.setData(tracks);
-                MapManage.setData(tracks);
-
+        appViewModel.getTracks().observe(this, tracks -> {
+            // todo mapa
+            if (tracks != null && tracks.size() > 0) {
+                appViewModel.setLastTrack(tracks.get(tracks.size() - 1));
             }
+            ChartManage.setData(tracks);
+            MapManage.setData(tracks);
+
         });
 
         // last track from current exer
-        appViewModel.getLastTrack().observe(this, new Observer<TrackEntity>() {
-            @Override
-            public void onChanged(@Nullable final TrackEntity track) {
-                // czas na bottomappbar
+        appViewModel.getLastTrack().observe(this, track -> {
+            // duration on bottomappbar
+            String barText;
+            long seconds = 0;
+            long minutes = 0;
+            long hours = 0;
+            if (track != null) {
+                seconds = TimeUnit.SECONDS.convert(track.getTime(), TimeUnit.NANOSECONDS) % 60;
+                minutes = TimeUnit.MINUTES.convert(track.getTime(), TimeUnit.NANOSECONDS) % 60;
+                hours = TimeUnit.HOURS.convert(track.getTime(), TimeUnit.NANOSECONDS);
+            }
+            barText = String.format(Locale.ENGLISH, "%2d s", seconds);
+            if (hours > 0 || minutes > 0) {
+                barText = String.format(Locale.ENGLISH, "%2d min ", minutes) + barText;
+            } else {
+                barText = String.format("%7s", "") + barText;
+            }
+            if (hours > 0) {
+                barText = String.format(Locale.ENGLISH, "%2d h ", hours) + barText;
+            } else {
+                barText = String.format("%7s", "") + barText;
+            }
+            bottomAppBar.getMenu().findItem(R.id.actDur).setTitle(barText);
+            // adds point to map and chart
+            MapManage.addTrack(track);
+            ChartManage.addTrack(track);
 
-                String barText;
-                long seconds = 0;
-                long minutes = 0;
-                long hours = 0;
+        });
 
-                if (track != null) {
-                    seconds = TimeUnit.SECONDS.convert(track.getTime(), TimeUnit.NANOSECONDS) % 60;
-                    minutes = TimeUnit.MINUTES.convert(track.getTime(), TimeUnit.NANOSECONDS) % 60;
-                    hours = TimeUnit.HOURS.convert(track.getTime(), TimeUnit.NANOSECONDS);
-                }
-                barText = String.format("%2d s", seconds);
-                if (hours > 0 || minutes > 0) {
-                    barText = String.format("%2d min ", minutes) + barText;
-                } else {
-                    barText = String.format("%7s", "") + barText;
-                }
-                if (hours > 0) {
-                    barText = String.format("%2d h ", hours) + barText;
-                } else {
-                    barText = String.format("%7s", "") + barText;
-                }
-                bottomAppBar.getMenu().findItem(R.id.actDur).setTitle(barText);
-                // todo
-                // dodanie punktu do mapy
-                MapManage.addTrack(track);
-                // dodanie punktu do wykresu
-                ChartManage.addTrack(track);
+        // the very last track
+        appViewModel.getAbsoluteLastTrack().observe(this, track -> appViewModel.setLastTrack(track));
 
+        // icon of startFab, data collection, data show
+        appViewModel.getState().observe(this, state -> {
+            if (state != null) {
+                int iconInd = 0;
+                switch (state.getState()) {
+                    case NOTHING:
+                        chipSportData.setVisibility(View.INVISIBLE);
+                        bottomAppBar.getMenu().findItem(R.id.historyShow).setEnabled(true);
+                        bottomAppBar.getMenu().findItem(R.id.historyShow).getIcon()
+                                .setTint(getResources().getColor(android.R.color.white));
+                        appViewModel.doNothing();
+                        iconInd = 0;
+                        break;
+                    case GPS:
+                        appViewModel.doNothing();
+                        if (!requestSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION,
+                                ACCESS_FINE_LOCATION_PERMISSION_CODE)) {
+                            return;
+                        }
+                        chipSportData.setVisibility(View.INVISIBLE);
+                        bottomAppBar.getMenu().findItem(R.id.historyShow).getIcon()
+                                .setTint(getResources().getColor(android.R.color.darker_gray));
+                        // if history visible perform id action
+                        // todo moze zoptymalizowac
+                        MaterialCardView mcv2 = findViewById(R.id.historyView);
+                        if (mcv2.getVisibility() == View.VISIBLE) {
+                            bottomAppBar.getMenu().performIdentifierAction(R.id.historyShow, 0);
+                        }
+                        // todo end
+                        bottomAppBar.getMenu().findItem(R.id.historyShow).setEnabled(false);
+                        appViewModel.collectData();
+                        iconInd = 1;
+                        break;
+                    case HISTORY:
+                        appViewModel.stopGps();
+                        chipSportData.setVisibility(View.VISIBLE);
+                        bottomAppBar.getMenu().findItem(R.id.historyShow).setEnabled(true);
+                        bottomAppBar.getMenu().findItem(R.id.historyShow).getIcon()
+                                .setTint(getResources().getColor(android.R.color.white));
+                        iconInd = 2;
+                        // jesli wchodzimy tu z GPS, to wszystko powinno byc juz pokazane, wiec nie zmieniamy
+                        // jesli wchodzi tu z NOTHING/HISTOTY, to robimy to przez recyclerview, ktory odpowiada
+                        // za zaladowanie danych
+                        break;
+                }
+                startFab.setImageResource(listFabIcon[iconInd]);
             }
         });
 
-        // last track ever
-        appViewModel.getAbsoluteLastTrack().observe(this, new Observer<TrackEntity>() {
-            @Override
-            public void onChanged(@Nullable final TrackEntity track) {
-                    appViewModel.setLastTrack(track);
-//                }
-
-            }
-        });
-
-        // icon of startFab
-        // data collection
-        // data show
-        appViewModel.getState().observe(this, new Observer<AppViewModel.AppState>() {
-            @Override
-            public void onChanged(@Nullable final AppViewModel.AppState state) {
-                if (state != null) {
-                    int iconInd = 0;
-                    switch (state.getState()) {
-                        case NOTHING:
-                            chipSportData.setVisibility(View.INVISIBLE);
-                            bottomAppBar.getMenu().findItem(R.id.historyShow).setEnabled(true);
-                            bottomAppBar.getMenu().findItem(R.id.historyShow).getIcon()
-                                    .setTint(getResources().getColor(android.R.color.white));
-                            appViewModel.doNothing();
-                            iconInd = 0;
-                            break;
-                        case GPS:
-                            appViewModel.doNothing();
-                            chipSportData.setVisibility(View.INVISIBLE);
-                            bottomAppBar.getMenu().findItem(R.id.historyShow).getIcon()
-                                    .setTint(getResources().getColor(android.R.color.darker_gray));                            
-                            // if history visible perform id action
-                            // todo moze zoptymalizowac
-                            MaterialCardView mcv2 = findViewById(R.id.historyView);
-                            if (mcv2.getVisibility() == View.VISIBLE) {
-                                bottomAppBar.getMenu().performIdentifierAction(R.id.historyShow, 0);
-                            }
-                            // todo end
-                            bottomAppBar.getMenu().findItem(R.id.historyShow).setEnabled(false);
-                            appViewModel.collectData();
-                            iconInd = 1;
-                            break;
-                        case HISTORY:
-                            appViewModel.stopGps();
-                            chipSportData.setVisibility(View.VISIBLE);
-                            bottomAppBar.getMenu().findItem(R.id.historyShow).setEnabled(true);
-                            bottomAppBar.getMenu().findItem(R.id.historyShow).getIcon()
-                                    .setTint(getResources().getColor(android.R.color.white));
-                            iconInd = 2;
-                            // jesli wchodzimy tu z GPS, to wszystko powinno byc juz pokazane, wiec nie zmieniamy
-                            // jesli wchodzi tu z NOTHING/HISTOTY, to robimy to przez recyclerview, ktory odpowiada
-                            // za zaladowanie danych
-                            break;
-                    }
-                    startFab.setImageResource(listFabIcon[iconInd]);
-                }
-            }
-        });
-        
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
                 ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -289,47 +272,32 @@ public class MainActivity extends AppCompatActivity {
         }).attachToRecyclerView(activitiesView);
 
         FloatingActionButton zoominFab = findViewById(R.id.zoomIn);
-        zoominFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (MapManage.map.canZoomIn())
-                    MapManage.map.getController().zoomIn();
-            }
+        zoominFab.setOnClickListener(view -> {
+            if (MapManage.map.canZoomIn())
+                MapManage.map.getController().zoomIn();
         });
 
         FloatingActionButton zoomoutFab = findViewById(R.id.zoomOut);
-        zoomoutFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MapManage.map.getController().zoomOut();
-            }
-        });
+        zoomoutFab.setOnClickListener(view -> MapManage.map.getController().zoomOut());
 
         ChipGroup chipGroup = findViewById(R.id.chipGroup);
-        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(ChipGroup group, @IdRes int checkedId) {
-                MenuItem sportType = ((BottomAppBar) findViewById(R.id.bottom_app_bar)).getMenu().findItem(R.id.actSet);
-                int typeInd = 0;
-                switch (checkedId) {
-                    case R.id.chipWalk:
-                        typeInd = 0;
-                        break;
-                    case R.id.chipRun:
-                        typeInd = 1;
-                        break;
-                    case R.id.chipBike:
-                        typeInd = 2;
-                        break;
-                }
-                appViewModel.setLastType(typeInd);
+        chipGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int typeInd = 0;
+            switch (checkedId) {
+                case R.id.chipWalk:
+                    typeInd = 0;
+                    break;
+                case R.id.chipRun:
+                    typeInd = 1;
+                    break;
+                case R.id.chipBike:
+                    typeInd = 2;
+                    break;
             }
+            appViewModel.setLastType(typeInd);
         });
 
     }
-
-
-
 
 
     private boolean menuSwitch(MenuItem item) {
@@ -365,15 +333,11 @@ public class MainActivity extends AppCompatActivity {
                     int height3 = rootView.getHeight();
 
                     ViewGroup.LayoutParams lp = mcv2.getLayoutParams();
-                    // todo zrobic cos z magic numbers
 
-                    int h1 = lp.height;
                     lp.height = height3 - (int) (2.75 * height);
                     mcv2.setLayoutParams(lp);
-                    // todo layout params powinny sie zmieniac podczas rotacji
 
                     mcv2.setVisibility(View.VISIBLE);
-//
 
                     Drawable d1 = item.getIcon();
                     d1.setTint(getColor(R.color.colorPrimaryDark));
@@ -402,10 +366,8 @@ public class MainActivity extends AppCompatActivity {
                     ViewGroup.LayoutParams lp = mcv.getLayoutParams();
                     lp.height = height3 / 3;
                     mcv.setLayoutParams(lp);
-                    // todo layout params powinny sie zmieniac podczas rotacji
 
                     mcv.setVisibility(View.VISIBLE);
-//
                     Drawable d1 = item.getIcon();
                     d1.setTint(getColor(R.color.colorPrimaryDark));
                     item.setIcon(d1);
@@ -434,8 +396,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.actSet:
 
                 if (mcv1.getVisibility() == View.INVISIBLE) {
-
-//                    // todo layout params powinny sie zmieniac podczas rotacji
                     mcv1.setVisibility(View.VISIBLE);
                     item.setIcon(listImgTint[appViewModel.getLastTypeInd()]);
                     mcv1.invalidate();
@@ -459,23 +419,58 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
-//        MapView map = MapManage.getInstance().getMap();
-//        map.onResume(); //needed for compass, my location overlays, v6.0.0 and up
+        // todo
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().save(this, prefs);
-//        MapView map = MapManage.getInstance().getMap();
-//        map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
+        // todo
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case (INTERNET_PERMISSION_CODE): {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length <= 0
+                        || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this,
+                            "Map cannot load without Internet access!",
+                            Toast.LENGTH_SHORT)
+                            .show();
+                }
+                return;
+            }
+            case (ACCESS_FINE_LOCATION_PERMISSION_CODE): {
+                if (grantResults.length <= 0
+                        || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    // if app just etnered gps mode, switch to NOTHING
+                    if (appViewModel.isAppStateEqual(AppViewModel.States.GPS)) {
+                        appViewModel.forceState(AppViewModel.States.NOTHING);
+                    }
+                    Toast.makeText(this,
+                            "Cannot collect GPS data!",
+                            Toast.LENGTH_SHORT)
+                            .show();
+
+                }
+                return;
+            }
+        }
+    }
+
+
+    public boolean requestSinglePermission(String permission, int requestCode) {
+        if (ContextCompat.checkSelfPermission(this,
+                permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{permission},
+                    requestCode);
+        }
+        return ContextCompat.checkSelfPermission(this,
+                permission) == PackageManager.PERMISSION_GRANTED;
     }
 
 }

@@ -9,6 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,10 +25,10 @@ abstract public class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase INSTANCE;
     private static RoomDatabase.Callback sRoomDatabaseCallback = new RoomDatabase.Callback() {
         @Override
-        public void onOpen(@NonNull SupportSQLiteDatabase db) {
-            super.onOpen(db);
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
 
-            AtomicReference<List<TypeEntity>> types = new AtomicReference<>(Arrays.asList(new TypeEntity[]{}));
+            AtomicReference<List<TypeEntity>> types = new AtomicReference<>(Collections.emptyList());
             List<String> exerTypes = Arrays.asList("WALK", "RUN", "BIKE");
             AppDatabaseDao dao = INSTANCE.appDatabaseDao();
             

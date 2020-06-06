@@ -12,14 +12,14 @@ public class TypeEntity {
     @NonNull
     @PrimaryKey
     @ColumnInfo(name = "type")
-    private String typeName="";
+    private String typeName = "";
 
 
     public TypeEntity() {
     }
 
     public TypeEntity(@NonNull String s) {
-        typeName=s;
+        typeName = s;
     }
 
 

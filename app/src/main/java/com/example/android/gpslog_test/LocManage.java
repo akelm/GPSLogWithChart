@@ -1,14 +1,18 @@
 package com.example.android.gpslog_test;
 
+import android.Manifest;
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.MutableLiveData;
+
 
 public class LocManage {
 
@@ -56,6 +60,7 @@ public class LocManage {
     }
 
     static void startGPS(ExerciseEntity exer) {
+
         locationManager = (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
 
         Log.v("gpslog_test", "startGPS");
@@ -63,6 +68,10 @@ public class LocManage {
         Log.v("gpslog_test", "after log lis");
 
         Log.v("gpslog_test", "loc man");
+        if (ActivityCompat.checkSelfPermission(application,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, locationListener);
 
     }

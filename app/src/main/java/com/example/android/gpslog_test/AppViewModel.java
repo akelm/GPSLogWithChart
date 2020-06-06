@@ -9,40 +9,23 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class AppViewModel extends AndroidViewModel {
 
-    public enum States {NOTHING, GPS, HISTORY}
-
-    public class AppState {
-
-        States state;
-
-        public AppState(States s) {
-            state = s;
-        }
-
-        public States getState() {
-            return state;
-        }
-    }
-
     List<TypeEntity> types;
-
-    private AppRepository mRepository;
-
     // this is exposed to MainActivity
     MutableLiveData<AppState> state;
     MutableLiveData<TypeEntity> lastType;
     MutableLiveData<Boolean> gpsOK;
+    private AppRepository mRepository;
     // used by recyclerview
     private LiveData<List<ExerciseEntity>> mExercises;
     // used by chip
     private MutableLiveData<ExerciseEntity> currentExercise;
     // used by chart, map
     private MutableLiveData<List<TrackEntity>> mTracks;
-    private LiveData<List<TrackEntity>> allTracks;
     // used by bottomappbar, chart, map
     private MutableLiveData<TrackEntity> lastTrack;
     private LiveData<TrackEntity> absoluteLastTrack;
@@ -53,17 +36,16 @@ public class AppViewModel extends AndroidViewModel {
         mRepository = new AppRepository(application);
         types = mRepository.getTypes();
         mExercises = mRepository.getExercises();
-        allTracks = mRepository.getAllTracks();
         absoluteLastTrack = mRepository.getLastTrack();
         lastType = new MutableLiveData<TypeEntity>();
         if (types != null && types.size() > 0) {
             lastType.postValue(types.get(0));
-        } else{
+        } else {
             lastType.postValue(null);
         }
         currentExercise = new MutableLiveData<ExerciseEntity>();
         currentExercise.postValue(null);
-        mTracks = new MutableLiveData<List<TrackEntity>>();;
+        mTracks = new MutableLiveData<List<TrackEntity>>();
         mTracks.postValue(null);
         lastTrack = new MutableLiveData<>();
         lastTrack.postValue(null);
@@ -77,19 +59,6 @@ public class AppViewModel extends AndroidViewModel {
 
     LiveData<List<ExerciseEntity>> getExercises() {
         return mExercises;
-    }
-
-    // recyclerview - history
-    void setCurrentExercise(ExerciseEntity exer) {
-
-        currentExercise.setValue(exer);
-
-    }
-
-    void setLastTrack(TrackEntity tr) {
-        if (state.getValue() == null || state.getValue().getState() == States.GPS) {
-            lastTrack.postValue(tr);
-        }
     }
 
     // recyclerview - history
@@ -107,55 +76,65 @@ public class AppViewModel extends AndroidViewModel {
         return lastTrack;
     }
 
-    // wchodzimy to ze start - GPS
+    // called from change to GPS after play button
     void collectData() {
         // new exercise
-        ExerciseEntity newExer = new ExerciseEntity();
-        if (lastType.getValue() != null) {
-            newExer.setTypeId(lastType.getValue().getTypeName());
-        } else {
-            newExer.setTypeId("WALK");
+        if (isAppStateEqual(States.GPS)) {
+            ExerciseEntity newExer = new ExerciseEntity();
+            if (lastType.getValue() != null) {
+                newExer.setTypeId(lastType.getValue().getTypeName());
+            } else {
+                newExer.setTypeId("WALK");
+            }
+            newExer.setStart(new Date().getTime());
+            mRepository.insertExercise(newExer);
+            currentExercise.setValue(newExer);
+            Log.v("gpslog_test", Objects.requireNonNull(mExercises.getValue()).toString());
+            mRepository.startGPS(currentExercise.getValue());
         }
-        newExer.setStart(new Date().getTime());
-        mRepository.insertExercise(newExer);
-        // podpinamy pod ostatnie
-        currentExercise.setValue(newExer);
-        Log.v("gpslog_test", mExercises.getValue().toString());
-        mRepository.startGPS(currentExercise.getValue());
     }
 
-    // wchodzimy razem z wejsciem do historii
+    // upon entering HISTORY
     public void stopGps() {
         mRepository.stopGps();
     }
 
-    // jak to sie zmieni, uaktualniamy czas chipie u gory
+    // update of bottomappbar duration time when this updates
     MutableLiveData<ExerciseEntity> getCurrentExercise() {
         return currentExercise;
     }
 
-    // jak to sie zmieni, zmieniamy caly wykres i mape
+    // recyclerview - history
+    void setCurrentExercise(ExerciseEntity exer) {
+
+        currentExercise.setValue(exer);
+
+    }
+
+    // update of map and chart
     MutableLiveData<List<TrackEntity>> getTracks() {
         return mTracks;
     }
 
-    // jak to sie zmieni, uaktualniamy czas na bottomappbar
+    // update of bottomappbar duration time when this updates
     LiveData<TrackEntity> getLastTrack() {
         return lastTrack;
     }
 
-    // jak to sie zmieni, uaktualniamy czas na bottomappbar
+    void setLastTrack(TrackEntity tr) {
+        if (state.getValue() == null || state.getValue().getState() == States.GPS) {
+            lastTrack.postValue(tr);
+        }
+    }
+
+    // update of bottomappbar duration time when this updates
     LiveData<TrackEntity> getAbsoluteLastTrack() {
         return absoluteLastTrack;
     }
 
-    // jak to sie zmieni, zaczynamy uaktualniac lastTrack
+    // when this changes we start updating last track
     public LiveData<Boolean> getGpsOk() {
         return gpsOK;
-    }
-
-    public LiveData<List<TrackEntity>> getAllTracks() {
-        return allTracks;
     }
 
     void deleteExercise(ExerciseEntity exer) {
@@ -168,12 +147,8 @@ public class AppViewModel extends AndroidViewModel {
         mTracks.postValue(null);
     }
 
-    void setLastType(int ind) {
-        lastType.setValue(types.get(ind % types.size()));
-    }
-
     int getTypeInd(TypeEntity type) {
-        if (type!=null) {
+        if (type != null) {
             for (int i = 0; i < types.size(); i++) {
                 if (types.get(i).getTypeName().equals(type.getTypeName())) {
                     return i;
@@ -195,8 +170,12 @@ public class AppViewModel extends AndroidViewModel {
         return lastType;
     }
 
+    void setLastType(int ind) {
+        lastType.setValue(types.get(ind % types.size()));
+    }
+
     public void matchCurrExerWithLastType() {
-        if (currentExercise.getValue()!=null && lastType.getValue() !=null) {
+        if (currentExercise.getValue() != null && lastType.getValue() != null) {
             if (!currentExercise.getValue().getTypeId().equals(lastType.getValue().getTypeName())) {
                 ExerciseEntity exer = currentExercise.getValue();
                 exer.setTypeId(lastType.getValue().getTypeName());
@@ -211,6 +190,18 @@ public class AppViewModel extends AndroidViewModel {
 
     public void setState(States s) {
         state.postValue(new AppState(s));
+    }
+
+    public void forceState(States s) {
+        state.setValue(new AppState(s));
+    }
+
+    public boolean isAppStateEqual(AppState appState) {
+        return Objects.requireNonNull(state.getValue()).isEqual(appState);
+    }
+
+    public boolean isAppStateEqual(States s) {
+        return Objects.requireNonNull(state.getValue()).getState() == s;
     }
 
     public void nextState() {
@@ -228,6 +219,29 @@ public class AppViewModel extends AndroidViewModel {
             }
         } else {
             state.postValue(new AppState(States.NOTHING));
+        }
+    }
+
+    public enum States {NOTHING, GPS, HISTORY}
+
+    public static class AppState {
+
+        States state;
+
+        public AppState(States s) {
+            state = s;
+        }
+
+        public States getState() {
+            return state;
+        }
+
+        public boolean isEqual(AppState s) {
+            if (s != null) {
+                return state == s.getState();
+            } else {
+                return false;
+            }
         }
     }
 

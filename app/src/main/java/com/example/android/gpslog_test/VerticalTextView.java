@@ -7,7 +7,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.TextView;
 
-// skopiowane z
+// source:
 // https://stackoverflow.com/questions/1258275/vertical-rotated-label-in-android
 
 public class VerticalTextView extends androidx.appcompat.widget.AppCompatTextView {

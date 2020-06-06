@@ -7,8 +7,6 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import com.github.mikephil.charting.data.Entry;
-
 import static androidx.room.ForeignKey.CASCADE;
 
 @Entity(tableName = "tracks",
@@ -19,9 +17,39 @@ import static androidx.room.ForeignKey.CASCADE;
         indices = {@Index("exerId")})
 public class TrackEntity {
 
+    @ColumnInfo(name = "exerId")
+    Long exerId;
+    @NonNull
+    @ColumnInfo(name = "time")
+    Long time = 0L;
+    @NonNull
+    @ColumnInfo(name = "lon")
+    Double lon = 0d;
+    @NonNull
+    @ColumnInfo(name = "lat")
+    Double lat = 0d;
+    @NonNull
+    @ColumnInfo(name = "alt")
+    Double alt = 0d;
+    @NonNull
+    @ColumnInfo(name = "vel")
+    Float vel = 0f;
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     private Integer id;
+
+    public TrackEntity() {
+
+    }
+
+    public TrackEntity(@NonNull Long ei, @NonNull Long t, @NonNull Double lo, @NonNull Double la, @NonNull Double al, @NonNull Float v) {
+        exerId = ei;
+        time = t;
+        lon = lo;
+        lat = la;
+        alt = al;
+        vel = v;
+    }
 
     @NonNull
     public Integer getId() {
@@ -31,22 +59,6 @@ public class TrackEntity {
     public void setId(@NonNull Integer i) {
         id = i;
     }
-
-    public TrackEntity() {
-
-    }
-
-    public TrackEntity(@NonNull  Long ei,@NonNull  Long t,@NonNull  Double lo,@NonNull  Double la,@NonNull  Double al,@NonNull  Float v) {
-        exerId = ei;
-        time = t;
-        lon = lo;
-        lat = la;
-        alt = al;
-        vel = v;
-    }
-
-    @ColumnInfo(name = "exerId")
-    Long exerId;
 
     @NonNull
     public Long getExerId() {
@@ -58,10 +70,6 @@ public class TrackEntity {
     }
 
     @NonNull
-    @ColumnInfo(name = "time")
-    Long time = 0L;
-
-    @NonNull
     public Long getTime() {
         return time;
     }
@@ -69,10 +77,6 @@ public class TrackEntity {
     public void setTime(@NonNull Long i) {
         time = i;
     }
-
-    @NonNull
-    @ColumnInfo(name = "lon")
-    Double lon = 0d;
 
     @NonNull
     public Double getLon() {
@@ -83,11 +87,6 @@ public class TrackEntity {
         lon = i;
     }
 
-
-    @NonNull
-    @ColumnInfo(name = "lat")
-    Double lat = 0d;
-
     @NonNull
     public Double getLat() {
         return lat;
@@ -97,11 +96,6 @@ public class TrackEntity {
         lat = i;
     }
 
-
-    @NonNull
-    @ColumnInfo(name = "alt")
-    Double alt = 0d;
-
     @NonNull
     public Double getAlt() {
         return alt;
@@ -110,11 +104,6 @@ public class TrackEntity {
     public void setAlt(@NonNull Double i) {
         alt = i;
     }
-
-
-    @NonNull
-    @ColumnInfo(name = "vel")
-    Float vel = 0f;
 
     @NonNull
     public Float getVel() {
