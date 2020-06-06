@@ -1,4 +1,4 @@
-package com.example.android.gpslog_test;
+package com.example.android.GPSLogWithChart;
 
 import android.app.Activity;
 import android.content.Context;

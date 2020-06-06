@@ -1,4 +1,4 @@
-package com.example.android.gpslog_test;
+package com.example.android.GPSLogWithChart;
 
 import android.app.Application;
 import android.util.Log;
@@ -197,11 +197,11 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public boolean isAppStateEqual(AppState appState) {
-        return Objects.requireNonNull(state.getValue()).isEqual(appState);
+        return state.getValue()!=null && state.getValue().isEqual(appState);
     }
 
     public boolean isAppStateEqual(States s) {
-        return Objects.requireNonNull(state.getValue()).getState() == s;
+        return state.getValue()!=null && (state.getValue()).getState() == s;
     }
 
     public void nextState() {

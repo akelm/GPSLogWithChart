@@ -1,4 +1,4 @@
-package com.example.android.gpslog_test;
+package com.example.android.GPSLogWithChart;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -22,7 +22,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityViewHolder> {
 
     //
     public ActivityAdapter(Activity activ) {
-        activity =activ;
+        activity = activ;
         listActivity = new ArrayList<ExerciseEntity>();
 
     }
@@ -67,7 +67,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityViewHolder> {
         }
         if (imRes > -1)
             holder.actTypeImg.setImageResource(imRes);
-            holder.actTypeImg.getDrawable().setTint(activity.getColor(android.R.color.white));
+        holder.actTypeImg.getDrawable().setTint(activity.getColor(android.R.color.white));
 
         holder.historyView.setOnClickListener(v -> {
             if (listener != null && position != RecyclerView.NO_POSITION) {
@@ -92,6 +92,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityViewHolder> {
     public void setOnItemClickListener(OnItemClickListener lis) {
         listener = lis;
     }
+
     public interface OnItemClickListener {
         void onItemClick(ExerciseEntity note) throws ExecutionException, InterruptedException;
     }

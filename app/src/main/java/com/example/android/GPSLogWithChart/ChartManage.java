@@ -1,4 +1,4 @@
-package com.example.android.gpslog_test;
+package com.example.android.GPSLogWithChart;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -17,17 +17,13 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import java.util.List;
 
 public class ChartManage implements OnChartValueSelectedListener {
-    public enum TimeUnit {SECONDS, MINUTES, HOURS}
-
     public static TimeUnit timeUnit = TimeUnit.SECONDS;
     public static long TOMINS = 120 * 1000000000L; // 120 seconds
     public static long TOHOURS = 120 * 60 * 1000000000L; // 120 mins
-
     public static LineChart chart = null;
     public static LineData data = null;
-    private static ChartManage instance = null;
     static Activity activity = null;
-
+    private static ChartManage instance = null;
     private List<ExerciseEntity> listActivity;
 
     // singleton
@@ -39,16 +35,6 @@ public class ChartManage implements OnChartValueSelectedListener {
             instance = new ChartManage();
         }
         return instance;
-    }
-
-    public void setup(Activity act) {
-        if (instance == null) {
-            instance = new ChartManage();
-        }
-        data = new LineData();
-        chart = act.findViewById(R.id.chart1);
-        chartStyleSetup();
-        activity = act;
     }
 
     private static LineDataSet createSet() {
@@ -65,11 +51,10 @@ public class ChartManage implements OnChartValueSelectedListener {
 
         return set;
     }
-    
 
     public static void setData(List<TrackEntity> tracks) {
         clearChart();
-        if (tracks!=null) {
+        if (tracks != null) {
             for (TrackEntity tr : tracks) {
                 addTrack(tr);
             }
@@ -139,6 +124,21 @@ public class ChartManage implements OnChartValueSelectedListener {
         return duration / 1e9f / 60f / 60f;
     }
 
+    public static void setSelected(int ind) {
+        Entry e = data.getDataSetByIndex(0).getEntryForIndex(ind);
+        chart.highlightValue(e.getX(), e.getY(), 0);
+    }
+
+    public void setup(Activity act) {
+        if (instance == null) {
+            instance = new ChartManage();
+        }
+        data = new LineData();
+        chart = act.findViewById(R.id.chart1);
+        chartStyleSetup();
+        activity = act;
+    }
+
     private void chartStyleSetup() {
         // background color
         chart.setBackgroundColor(Color.WHITE);
@@ -182,15 +182,12 @@ public class ChartManage implements OnChartValueSelectedListener {
 
     }
 
-    public static void setSelected(int ind) {
-        Entry e = data.getDataSetByIndex(0).getEntryForIndex(ind);
-        chart.highlightValue(e.getX(), e.getY(), 0);
-    }
-
     @Override
     public void onNothingSelected() {
         Log.i("Nothing selected", "Nothing selected.");
     }
+
+    public enum TimeUnit {SECONDS, MINUTES, HOURS}
 
 }
 

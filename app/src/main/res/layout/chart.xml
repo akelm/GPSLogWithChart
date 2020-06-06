@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
 
-    <com.example.android.gpslog_test.VerticalTextView
+    <com.example.android.GPSLogWithChart.VerticalTextView
         android:id="@+id/ylabel"
         android:layout_width="wrap_content"
         android:layout_height="0dp"

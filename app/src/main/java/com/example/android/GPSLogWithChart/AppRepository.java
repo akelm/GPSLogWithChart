@@ -1,4 +1,4 @@
-package com.example.android.gpslog_test;
+package com.example.android.GPSLogWithChart;
 
 import android.app.Application;
 
@@ -12,11 +12,11 @@ import java.util.concurrent.Future;
 
 public class AppRepository {
 
+    MutableLiveData<Boolean> gpsOk;
     private AppDatabaseDao appDatabaseDao;
     private LiveData<List<ExerciseEntity>> mExercises;
     private LiveData<List<TrackEntity>> allTracks;
     private LiveData<TrackEntity> lastTrack;
-    MutableLiveData<Boolean> gpsOk;
 
     AppRepository(Application application) {
         AppDatabase db = AppDatabase.getDatabase(application);
@@ -32,7 +32,7 @@ public class AppRepository {
     LiveData<List<ExerciseEntity>> getExercises() {
         return mExercises;
     }
-    
+
 
     LiveData<TrackEntity> getLastTrack() {
         return lastTrack;
@@ -61,7 +61,7 @@ public class AppRepository {
             return null;
         }
     }
-    
+
 
     List<TypeEntity> getTypes() throws ExecutionException, InterruptedException {
         Callable<List<TypeEntity>> callable = () -> appDatabaseDao.getTypes();

@@ -1,4 +1,4 @@
-package com.example.android.gpslog_test;
+package com.example.android.GPSLogWithChart;
 
 import android.content.Context;
 
@@ -31,7 +31,7 @@ abstract public class AppDatabase extends RoomDatabase {
             AtomicReference<List<TypeEntity>> types = new AtomicReference<>(Collections.emptyList());
             List<String> exerTypes = Arrays.asList("WALK", "RUN", "BIKE");
             AppDatabaseDao dao = INSTANCE.appDatabaseDao();
-            
+
             Runnable runnable = () -> {
                 types.set(dao.getTypes());
             };
