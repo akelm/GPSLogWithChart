@@ -83,7 +83,7 @@ public class LocManage {
         public MyLocationListener(ExerciseEntity exerciseEntity) {
             exer = exerciseEntity;
             gpsOk.postValue(false);
-
+            start=0;
         }
 
         @Override

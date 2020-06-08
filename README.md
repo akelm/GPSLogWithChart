@@ -112,6 +112,9 @@ dolnym rogu służy do włączania/wyłączania akwizycji danych z GPS.
 # Testy
 Zostały zrobione jedynie testy funkcjonalne.
 
+# Do zrobienia
+* zachowanie podczas wstrzymania/kontynuacji
+* detekcja wyłączonego GPS-a
 <!---
 # Licencja
 2020 Anna Kelm
