@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.example.android.gpslog_test", appContext.getPackageName());
+        assertEquals("com.example.android.GPSLogWithChart", appContext.getPackageName());
     }
 }

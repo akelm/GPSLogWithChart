@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">gpslog_test</string>
+    <string name="app_name">GPSLogWithChart</string>
     <string name="dash">-</string>
     <string name="actDurString">83 h 22 min 11 s</string>
 </resources>

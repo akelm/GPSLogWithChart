@@ -89,7 +89,7 @@ public class AppViewModel extends AndroidViewModel {
             newExer.setStart(new Date().getTime());
             mRepository.insertExercise(newExer);
             currentExercise.setValue(newExer);
-            Log.v("gpslog_test", Objects.requireNonNull(mExercises.getValue()).toString());
+            Log.v("GPSLogWithChart", Objects.requireNonNull(mExercises.getValue()).toString());
             mRepository.startGPS(currentExercise.getValue());
         }
     }

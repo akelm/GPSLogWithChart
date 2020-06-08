@@ -63,11 +63,11 @@ public class LocManage {
 
         locationManager = (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
 
-        Log.v("gpslog_test", "startGPS");
+        Log.v("GPSLogWithChart", "startGPS");
         locationListener = new MyLocationListener(exer);
-        Log.v("gpslog_test", "after log lis");
+        Log.v("GPSLogWithChart", "after log lis");
 
-        Log.v("gpslog_test", "loc man");
+        Log.v("GPSLogWithChart", "loc man");
         if (ActivityCompat.checkSelfPermission(application,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -94,8 +94,8 @@ public class LocManage {
             // meters/second from loc.getSpeed()
             // x 3600/1000=3.6 to get km/h
             float velocity = loc.getSpeed() * 3.6f;
-            Log.v("gpslog_test", "loc.hasSpeed() " + loc.hasSpeed());
-            Log.v("gpslog_test", "loc.getSpeed() " + loc.getSpeed());
+            Log.v("GPSLogWithChart", "loc.hasSpeed() " + loc.hasSpeed());
+            Log.v("GPSLogWithChart", "loc.getSpeed() " + loc.getSpeed());
 
             double altitude = loc.getAltitude();
             long time = loc.getElapsedRealtimeNanos();
